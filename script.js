@@ -60,4 +60,18 @@ function renderOrders() {
         <button onclick="updateStatus(${o.id}, 'Complete')">Complete</button>
       </div>`;
   });
+
+function unlockKitchen() {
+  const pinValue = document.getElementById("pin").value; // read input value
+  const kitchenSection = document.getElementById("orders");
+
+  if (pinValue === "123PEEPS") {
+    document.getElementById("pin").style.display = "none";   // hide PIN input
+    kitchenSection.style.display = "block";                  // show orders
+    renderOrders();
+  } else {
+    alert("Wrong PIN");
+  }
+}
+
 }
