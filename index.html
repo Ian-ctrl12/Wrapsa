@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wrapsa Lumpia</title>
+  <script defer src="script.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🌯 Wrapsa</h1>
+
+  <div class="tabs">
+    <button onclick="showOrder()">Order Now</button>
+    <button onclick="showKitchen()">Kitchen View</button>
+  </div>
+
+  <section id="order">
+    <h2>Order Now</h2>
+    <input id="name" placeholder="Your Name">
+    <select id="item">
+      <option>Classic Lumpia</option>
+      <option>Cheese Lumpia</option>
+      <option>Spicy Lumpia</option>
+    </select>
+    <button onclick="placeOrder()">Place Order</button>
+  </section>
+
+  <section id="kitchen" class="hidden">
+    <h2>Kitchen View</h2>
+    <input id="pin" placeholder="Enter PIN">
+    <button onclick="unlockKitchen()">Unlock</button>
+    <div id="orders"></div>
+  </section>
+</body>
+</html>
