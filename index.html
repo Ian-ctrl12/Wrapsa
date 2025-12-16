@@ -1,129 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF‑8">
   <title>Wrapsa Lumpia</title>
   <style>
-    body { font-family: Arial; background: #fff3e0; text-align:center; padding:20px; }
-    button { padding:10px; margin:5px; background:orange; color:white; border:none; cursor:pointer; }
-    .hidden { display:none; }
-    .order-card { background:white; margin:10px auto; padding:10px; width:300px; border-radius:5px; }
-    .tabs { margin-bottom:20px; }
+    body { font‑family: Arial; background: #fff3e0; text‑align: center; padding: 20px; }
+    button { padding: 10px; margin: 5px; background: orange; color: white; border: none; cursor: pointer; }
+    .hidden { display: none; }
+    .order‑card { background: white; margin: 10px auto; padding: 10px; width: 300px; border‑radius: 5px; }
   </style>
 </head>
 <body>
 
-  <h1>🌯 Wrapsa</h1>
+<h1>🌯 Wrapsa</h1>
 
-  <div class="tabs">
-    <button onclick="showOrder()">Order Now</button>
-    <button onclick="showKitchen()">Kitchen View</button>
+<div>
+  <button onclick="showOrder()">Order Now</button>
+  <button onclick="showKitchen()">Kitchen View</button>
+</div>
+
+<section id="order-section">
+  <h2>Order Now</h2>
+  <input id="name" placeholder="Your Name"><br><br>
+  <select id="item">
+    <option>Classic Lumpia</option>
+    <option>Cheese Lumpia</option>
+    <option>Spicy Lumpia</option>
+  </select><br><br>
+  <button onclick="placeOrder()">Place Order</button>
+</section>
+
+<section id="kitchen-section" class="hidden">
+  <h2>Kitchen View</h2>
+  <div id="pin-section">
+    <input id="pin" placeholder="Enter PIN">
+    <button onclick="unlockKitchen()">Unlock</button>
   </div>
+  <div id="orders-list" class="hidden"></div>
+</section>
 
-  <!-- ORDER SECTION -->
-  <section id="order-section">
-    <h2>Order Now</h2>
-    <input id="name" placeholder="Your Name"><br><br>
-    <select id="item">
-      <option>Classic Lumpia</option>
-      <option>Cheese Lumpia</option>
-      <option>Spicy Lumpia</option>
-    </select><br><br>
-    <button onclick="placeOrder()">Place Order</button>
-  </section>
-
-  <!-- KITCHEN SECTION -->
-  <section id="kitchen-section" class="hidden">
-    <h2>Kitchen View</h2>
-    <div id="pin-section">
-      <input id="pin" placeholder="Enter PIN">
-      <button onclick="unlockKitchen()">Unlock</button>
-    </div>
-    <div id="orders-list" class="hidden"></div>
-  </section>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app‑compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase‑database‑compat.js"></script>
 
 <script>
-const PIN = "123PEEPS";
-let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+  // 🔥 YOUR firebaseConfig goes here (from Firebase console)
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
 
-// Save & sync orders
-function saveOrders() {
-  localStorage.setItem("orders", JSON.stringify(orders));
-  renderOrders();
-}
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-// Tabs
-function showOrder() {
-  document.getElementById("order-section").classList.remove("hidden");
-  document.getElementById("kitchen-section").classList.add("hidden");
-}
-function showKitchen() {
-  document.getElementById("order-section").classList.add("hidden");
-  document.getElementById("kitchen-section").classList.remove("hidden");
-}
+  const PIN = "123PEEPS";
 
-// Place Order
-function placeOrder() {
-  const name = document.getElementById("name").value.trim();
-  const item = document.getElementById("item").value;
-  if (!name) { alert("Enter your name"); return; }
-
-  const order = { id: Date.now(), name, item, status: "Ordered" };
-  orders.push(order);
-  saveOrders();
-  alert("Order placed! You will be notified of status updates.");
-  document.getElementById("name").value = "";
-}
-
-// Unlock Kitchen
-function unlockKitchen() {
-  const pinValue = document.getElementById("pin").value;
-  if (pinValue === PIN) {
-    document.getElementById("pin-section").classList.add("hidden");
-    document.getElementById("orders-list").classList.remove("hidden");
-    renderOrders();
-  } else {
-    alert("Wrong PIN");
+  function showOrder() {
+    document.getElementById("order-section").classList.remove("hidden");
+    document.getElementById("kitchen-section").classList.add("hidden");
   }
-}
 
-// Render Orders
-function renderOrders() {
-  const ordersDiv = document.getElementById("orders-list");
-  if (!ordersDiv) return;
-
-  ordersDiv.innerHTML = "";
-  if (orders.length === 0) { ordersDiv.innerHTML = "<p>No active orders</p>"; return; }
-
-  orders.forEach(o => {
-    const div = document.createElement("div");
-    div.className = "order-card";
-    div.innerHTML = `
-      <b>${o.name}</b><br>${o.item}<br>Status: ${o.status}<br>
-      <button onclick="updateStatus(${o.id}, 'Preparing')">Preparing</button>
-      <button onclick="updateStatus(${o.id}, 'Ready')">Ready</button>
-      <button onclick="updateStatus(${o.id}, 'Complete')">Complete</button>
-    `;
-    ordersDiv.appendChild(div);
-  });
-}
-
-// Update Status
-function updateStatus(id, status) {
-  const order = orders.find(o => o.id === id);
-  if (!order) return;
-
-  if (status === "Complete") {
-    orders = orders.filter(o => o.id !== id);
-    alert("Order complete! Thank you!");
-  } else {
-    order.status = status;
-    alert(`Order status: ${status}`);
+  function showKitchen() {
+    document.getElementById("order-section").classList.add("hidden");
+    document.getElementById("kitchen-section").classList.remove("hidden");
   }
-  saveOrders();
-}
 
-renderOrders();
+  function placeOrder() {
+    const name = document.getElementById("name").value.trim();
+    const item = document.getElementById("item").value;
+    if (!name) { alert("Enter your name"); return; }
+
+    const newOrderRef = db.ref("orders").push();
+    newOrderRef.set({
+      id: newOrderRef.key,
+      name,
+      item,
+      status: "Ordered"
+    });
+
+    alert("Order placed! You will be notified.");
+    document.getElementById("name").value = "";
+  }
+
+  function unlockKitchen() {
+    const pinValue = document.getElementById("pin").value;
+    if (pinValue === PIN) {
+      document.getElementById("pin-section").classList.add("hidden");
+      document.getElementById("orders-list").classList.remove("hidden");
+      listenForOrders();
+    } else {
+      alert("Wrong PIN");
+    }
+  }
+
+  function listenForOrders() {
+    db.ref("orders").on("value", snapshot => {
+      const ordersDiv = document.getElementById("orders-list");
+      ordersDiv.innerHTML = "";
+      snapshot.forEach(childSnap => {
+        const o = childSnap.val();
+        ordersDiv.innerHTML += `
+          <div class="order‑card">
+            <b>${o.name}</b><br>${o.item}<br>Status: ${o.status}<br>
+            <button onclick="updateStatus('${o.id}','Preparing')">Preparing</button>
+            <button onclick="updateStatus('${o.id}','Ready')">Ready</button>
+            <button onclick="updateStatus('${o.id}','Complete')">Complete</button>
+          </div>`;
+      });
+    });
+  }
+
+  function updateStatus(id, status) {
+    const orderRef = db.ref("orders/" + id);
+    if (status === "Complete") {
+      orderRef.remove();
+      alert("Order completed!");
+    } else {
+      orderRef.update({ status });
+      alert("Order is now " + status);
+    }
+  }
 </script>
 
 </body>
