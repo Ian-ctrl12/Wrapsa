@@ -1,50 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF‑8">
-  <title>Wrapsa Lumpia</title>
-  <style>
-    body { font‑family: Arial; background: #fff3e0; text‑align: center; padding: 20px; }
-    button { padding: 10px; margin: 5px; background: orange; color: white; border: none; cursor: pointer; }
-    .hidden { display: none; }
-    .order‑card { background: white; margin: 10px auto; padding: 10px; width: 300px; border‑radius: 5px; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Wrapsa</title>
 </head>
 <body>
 
-<h1>🌯 Wrapsa</h1>
+<h1>Wrapsa Order</h1>
 
-<div>
-  <button onclick="showOrder()">Order Now</button>
-  <button onclick="showKitchen()">Kitchen View</button>
-</div>
+<input id="name" placeholder="Your name">
+<select id="item">
+  <option>Classic Lumpia</option>
+  <option>Cheese Lumpia</option>
+</select>
+<button onclick="placeOrder()">Place Order</button>
 
-<section id="order-section">
-  <h2>Order Now</h2>
-  <input id="name" placeholder="Your Name"><br><br>
-  <select id="item">
-    <option>Classic Lumpia</option>
-    <option>Cheese Lumpia</option>
-    <option>Spicy Lumpia</option>
-  </select><br><br>
-  <button onclick="placeOrder()">Place Order</button>
-</section>
+<hr>
 
-<section id="kitchen-section" class="hidden">
-  <h2>Kitchen View</h2>
-  <div id="pin-section">
-    <input id="pin" placeholder="Enter PIN">
-    <button onclick="unlockKitchen()">Unlock</button>
-  </div>
-  <div id="orders-list" class="hidden"></div>
-</section>
+<h2>Kitchen View</h2>
+<input id="pin" placeholder="PIN">
+<button onclick="unlockKitchen()">Unlock</button>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app‑compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase‑database‑compat.js"></script>
+<ul id="orders"></ul>
+
+<!-- ✅ Firebase scripts -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-  // 1️⃣ Firebase config
+  // 🔥 CONFIG
   const firebaseConfig = {
     apiKey: "AIzaSyBWFky3ws2qePzzLW0xKkfA7q3PG-Sr1Z0",
     authDomain: "wrapsa-81a32.firebaseapp.com",
@@ -55,18 +39,15 @@
     appId: "1:181271317560:web:f86a4e0dab265a65056acd"
   };
 
-  // 2️⃣ Initialize Firebase FIRST
+  // 🔥 INIT
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-
-  // 3️⃣ NOW define everything that uses db
   const PIN = "123PEEPS";
 
+  // ✅ ORDER
   function placeOrder() {
     const name = document.getElementById("name").value;
     const item = document.getElementById("item").value;
-
-    if (!name) return alert("Enter your name");
 
     db.ref("orders").push({
       name,
@@ -74,25 +55,27 @@
       status: "Ordered"
     });
 
-    alert("Order placed!");
+    alert("Order sent!");
   }
 
+  // 🔐 KITCHEN
   function unlockKitchen() {
-    const pin = document.getElementById("pin").value;
-    if (pin === PIN) {
-      listenForOrders();
-    } else {
+    if (document.getElementById("pin").value !== PIN) {
       alert("Wrong PIN");
+      return;
     }
-  }
 
-  function listenForOrders() {
-    db.ref("orders").on("value", snapshot => {
-      console.log(snapshot.val());
+    db.ref("orders").on("value", snap => {
+      const list = document.getElementById("orders");
+      list.innerHTML = "";
+
+      snap.forEach(child => {
+        const li = document.createElement("li");
+        li.textContent = child.val().name + " - " + child.val().item;
+        list.appendChild(li);
+      });
     });
   }
-</script>
-
 </script>
 
 </body>
