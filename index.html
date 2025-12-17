@@ -1,36 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Wrapsa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    button { margin: 4px; }
+    #kitchenSection { display: none; margin-top: 20px; }
+    li { margin-bottom: 10px; }
+  </style>
 </head>
 <body>
 
-<h1>Wrapsa Order</h1>
+<h1>🌯 Wrapsa</h1>
 
-<input id="name" placeholder="Your name">
-<select id="item">
+<!-- ORDER SECTION -->
+<h2>Order Now</h2>
+<input id="customerName" placeholder="Your name" />
+<select id="orderItem">
   <option>Classic Lumpia</option>
   <option>Cheese Lumpia</option>
 </select>
-<button onclick="placeOrder()">Place Order</button>
+<button id="orderBtn">Place Order</button>
 
-<hr>
+<hr />
 
+<!-- KITCHEN LOGIN -->
 <h2>Kitchen View</h2>
-<input id="pin" placeholder="PIN">
-<button onclick="unlockKitchen()">Unlock</button>
+<input id="pinInput" placeholder="Enter PIN" />
+<button id="unlockBtn">Unlock</button>
 
-<div id="kitchen" style="display:none;">
-  <ul id="orders"></ul>
+<!-- KITCHEN SECTION -->
+<div id="kitchenSection">
+  <h3>Incoming Orders</h3>
+  <ul id="ordersList"></ul>
 </div>
 
-<!-- Firebase libraries -->
+<!-- FIREBASE SDKs (COMPAT VERSION – REQUIRED) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<!-- YOUR SCRIPT (ONLY ONE) -->
 <script>
+  /***************
+   * FIREBASE SETUP
+   ***************/
   const firebaseConfig = {
     apiKey: "AIzaSyBWFky3ws2qePzzLW0xKkfA7q3PG-Sr1Z0",
     authDomain: "wrapsa-81a32.firebaseapp.com",
@@ -42,15 +56,79 @@
   };
 
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.database(); // MUST BE ABOVE EVERYTHING
+  const db = firebase.database();
 
-  function placeOrder() {
+  /***************
+   * ORDER LOGIC
+   ***************/
+  document.getElementById("orderBtn").onclick = () => {
+    const name = document.getElementById("customerName").value.trim();
+    const item = document.getElementById("orderItem").value;
+
+    if (!name) {
+      alert("Please enter your name");
+      return;
+    }
+
     db.ref("orders").push({
-      name: "Test",
-      item: "Classic Lumpia",
-      status: "Ordered"
+      name,
+      item,
+      status: "Ordered",
+      time: Date.now()
     });
-    alert("OK");
+
+    alert("Order sent!" );
+    document.getElementById("customerName").value = "";
+  };
+
+  /***************
+   * KITCHEN LOGIN
+   ***************/
+  const PIN = "123PEEPS";
+
+  document.getElementById("unlockBtn").onclick = () => {
+    const pin = document.getElementById("pinInput").value;
+    if (pin !== PIN) {
+      alert("Wrong PIN");
+      return;
+    }
+
+    document.getElementById("kitchenSection").style.display = "block";
+    listenForOrders();
+  };
+
+  /***************
+   * REALTIME ORDERS
+   ***************/
+  function listenForOrders() {
+    const list = document.getElementById("ordersList");
+
+    db.ref("orders").on("value", snapshot => {
+      list.innerHTML = "";
+
+      snapshot.forEach(child => {
+        const order = child.val();
+        const id = child.key;
+
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${order.name}</strong> – ${order.item}<br>
+          Status: <em>${order.status}</em><br>
+          <button onclick="updateStatus('${id}', 'Preparing')">Preparing</button>
+          <button onclick="updateStatus('${id}', 'Ready')">Ready</button>
+          <button onclick="completeOrder('${id}')">Complete</button>
+        `;
+        list.appendChild(li);
+      });
+    });
+  }
+
+  function updateStatus(id, status) {
+    db.ref("orders/" + id).update({ status });
+  }
+
+  function completeOrder(id) {
+    db.ref("orders/" + id).remove();
   }
 </script>
 
