@@ -44,54 +44,42 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase‑database‑compat.js"></script>
 
 <script>
-  // 🔥 YOUR firebaseConfig goes here (from Firebase console)
+  // 1️⃣ Firebase config
   const firebaseConfig = {
-  apiKey: "AIzaSyBWFky3ws2qePzzLW0xKkfA7q3PG-Sr1Z0",
-  authDomain: "wrapsa-81a32.firebaseapp.com",
-  databaseURL: "https://wrapsa-81a32-default-rtdb.firebaseio.com",
-  projectId: "wrapsa-81a32",
-  storageBucket: "wrapsa-81a32.appspot.com",
-  messagingSenderId: "181271317560",
-  appId: "1:181271317560:web:f86a4e0dab265a65056acd"
-};
+    apiKey: "AIzaSyBWFky3ws2qePzzLW0xKkfA7q3PG-Sr1Z0",
+    authDomain: "wrapsa-81a32.firebaseapp.com",
+    databaseURL: "https://wrapsa-81a32-default-rtdb.firebaseio.com",
+    projectId: "wrapsa-81a32",
+    storageBucket: "wrapsa-81a32.appspot.com",
+    messagingSenderId: "181271317560",
+    appId: "1:181271317560:web:f86a4e0dab265a65056acd"
+  };
 
+  // 2️⃣ Initialize Firebase FIRST
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  // 3️⃣ NOW define everything that uses db
   const PIN = "123PEEPS";
 
-  function showOrder() {
-    document.getElementById("order-section").classList.remove("hidden");
-    document.getElementById("kitchen-section").classList.add("hidden");
-  }
-
-  function showKitchen() {
-    document.getElementById("order-section").classList.add("hidden");
-    document.getElementById("kitchen-section").classList.remove("hidden");
-  }
-
   function placeOrder() {
-    const name = document.getElementById("name").value.trim();
+    const name = document.getElementById("name").value;
     const item = document.getElementById("item").value;
-    if (!name) { alert("Enter your name"); return; }
 
-    const newOrderRef = db.ref("orders").push();
-    newOrderRef.set({
-      id: newOrderRef.key,
+    if (!name) return alert("Enter your name");
+
+    db.ref("orders").push({
       name,
       item,
       status: "Ordered"
     });
 
-    alert("Order placed! You will be notified.");
-    document.getElementById("name").value = "";
+    alert("Order placed!");
   }
 
   function unlockKitchen() {
-    const pinValue = document.getElementById("pin").value;
-    if (pinValue === PIN) {
-      document.getElementById("pin-section").classList.add("hidden");
-      document.getElementById("orders-list").classList.remove("hidden");
+    const pin = document.getElementById("pin").value;
+    if (pin === PIN) {
       listenForOrders();
     } else {
       alert("Wrong PIN");
@@ -100,31 +88,11 @@
 
   function listenForOrders() {
     db.ref("orders").on("value", snapshot => {
-      const ordersDiv = document.getElementById("orders-list");
-      ordersDiv.innerHTML = "";
-      snapshot.forEach(childSnap => {
-        const o = childSnap.val();
-        ordersDiv.innerHTML += `
-          <div class="order‑card">
-            <b>${o.name}</b><br>${o.item}<br>Status: ${o.status}<br>
-            <button onclick="updateStatus('${o.id}','Preparing')">Preparing</button>
-            <button onclick="updateStatus('${o.id}','Ready')">Ready</button>
-            <button onclick="updateStatus('${o.id}','Complete')">Complete</button>
-          </div>`;
-      });
+      console.log(snapshot.val());
     });
   }
+</script>
 
-  function updateStatus(id, status) {
-    const orderRef = db.ref("orders/" + id);
-    if (status === "Complete") {
-      orderRef.remove();
-      alert("Order completed!");
-    } else {
-      orderRef.update({ status });
-      alert("Order is now " + status);
-    }
-  }
 </script>
 
 </body>
