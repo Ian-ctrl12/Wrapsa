@@ -42,9 +42,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-  /***************
-   * FIREBASE SETUP
-   ***************/
   const firebaseConfig = {
     apiKey: "AIzaSyBWFky3ws2qePzzLW0xKkfA7q3PG-Sr1Z0",
     authDomain: "wrapsa-81a32.firebaseapp.com",
@@ -57,18 +54,14 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+  const PIN = "123PEEPS";
 
-  /***************
-   * ORDER LOGIC
-   ***************/
+  // ===== ORDER =====
   document.getElementById("orderBtn").onclick = () => {
     const name = document.getElementById("customerName").value.trim();
     const item = document.getElementById("orderItem").value;
 
-    if (!name) {
-      alert("Please enter your name");
-      return;
-    }
+    if (!name) return alert("Enter name");
 
     db.ref("orders").push({
       name,
@@ -77,49 +70,55 @@
       time: Date.now()
     });
 
-    alert("Order sent!" );
+    alert("Order sent!");
     document.getElementById("customerName").value = "";
   };
 
-  /***************
-   * KITCHEN LOGIN
-   ***************/
-  const PIN = "123PEEPS";
-
+  // ===== KITCHEN =====
   document.getElementById("unlockBtn").onclick = () => {
-    const pin = document.getElementById("pinInput").value;
-    if (pin !== PIN) {
+    if (document.getElementById("pinInput").value !== PIN) {
       alert("Wrong PIN");
       return;
     }
 
     document.getElementById("kitchenSection").style.display = "block";
-    listenForOrders();
+    startKitchenListeners();
   };
 
-  /***************
-   * REALTIME ORDERS
-   ***************/
-  function listenForOrders() {
-    const list = document.getElementById("ordersList");
+  const ordersList = document.getElementById("ordersList");
 
-    db.ref("orders").on("value", snapshot => {
-      list.innerHTML = "";
+  function startKitchenListeners() {
+    ordersList.innerHTML = "";
 
-      snapshot.forEach(child => {
-        const order = child.val();
-        const id = child.key;
+    // NEW ORDER
+    db.ref("orders").on("child_added", snap => {
+      const order = snap.val();
+      const id = snap.key;
 
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>${order.name}</strong> – ${order.item}<br>
-          Status: <em>${order.status}</em><br>
-          <button onclick="updateStatus('${id}', 'Preparing')">Preparing</button>
-          <button onclick="updateStatus('${id}', 'Ready')">Ready</button>
-          <button onclick="completeOrder('${id}')">Complete</button>
-        `;
-        list.appendChild(li);
-      });
+      const li = document.createElement("li");
+      li.id = id;
+      li.innerHTML = `
+        <strong>${order.name}</strong> — ${order.item}<br>
+        Status: <span>${order.status}</span><br>
+        <button onclick="updateStatus('${id}', 'Preparing')">Preparing</button>
+        <button onclick="updateStatus('${id}', 'Ready')">Ready</button>
+        <button onclick="completeOrder('${id}')">Complete</button>
+      `;
+
+      ordersList.appendChild(li);
+    });
+
+    // STATUS UPDATE
+    db.ref("orders").on("child_changed", snap => {
+      const order = snap.val();
+      const li = document.getElementById(snap.key);
+      if (li) li.querySelector("span").textContent = order.status;
+    });
+
+    // REMOVE ORDER
+    db.ref("orders").on("child_removed", snap => {
+      const li = document.getElementById(snap.key);
+      if (li) li.remove();
     });
   }
 
