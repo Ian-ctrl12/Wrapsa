@@ -23,12 +23,12 @@
 
 <ul id="orders"></ul>
 
-<!-- ✅ Firebase scripts -->
+<!-- Firebase libraries -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+<!-- YOUR SCRIPT (ONLY ONE) -->
 <script>
-  // 🔥 CONFIG
   const firebaseConfig = {
     apiKey: "AIzaSyBWFky3ws2qePzzLW0xKkfA7q3PG-Sr1Z0",
     authDomain: "wrapsa-81a32.firebaseapp.com",
@@ -39,42 +39,16 @@
     appId: "1:181271317560:web:f86a4e0dab265a65056acd"
   };
 
-  // 🔥 INIT
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const PIN = "123PEEPS";
+  const db = firebase.database(); // MUST BE ABOVE EVERYTHING
 
-  // ✅ ORDER
   function placeOrder() {
-    const name = document.getElementById("name").value;
-    const item = document.getElementById("item").value;
-
     db.ref("orders").push({
-      name,
-      item,
+      name: "Test",
+      item: "Classic Lumpia",
       status: "Ordered"
     });
-
-    alert("Order sent!");
-  }
-
-  // 🔐 KITCHEN
-  function unlockKitchen() {
-    if (document.getElementById("pin").value !== PIN) {
-      alert("Wrong PIN");
-      return;
-    }
-
-    db.ref("orders").on("value", snap => {
-      const list = document.getElementById("orders");
-      list.innerHTML = "";
-
-      snap.forEach(child => {
-        const li = document.createElement("li");
-        li.textContent = child.val().name + " - " + child.val().item;
-        list.appendChild(li);
-      });
-    });
+    alert("OK");
   }
 </script>
 
