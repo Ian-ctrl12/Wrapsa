@@ -62,15 +62,16 @@ function renderOrders() {
   });
 
 function unlockKitchen() {
-  const pinValue = document.getElementById("pin").value; // read input value
-  const kitchenSection = document.getElementById("orders");
+  const pinInput = document.getElementById("pin").value;
 
-  if (pinValue === "123PEEPS") {
-    document.getElementById("pin").style.display = "none";   // hide PIN input
-    kitchenSection.style.display = "block";                  // show orders
-    renderOrders();
-  } else {
+  if (pinInput !== "123PEEPS") {
     alert("Wrong PIN");
+    return;
+  }
+
+  document.getElementById("kitchen").style.display = "block";
+
+  listenForOrders();
   }
 }
 
